@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Route Navigator</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="controls">
+        <h1>Smart Route Navigator</h1>
+
+        <label for="algorithm">Select Algorithm:</label>
+        <select id="algorithm">
+            <option value="dijkstra">Dijkstra</option>
+            <option value="astar">A*</option>
+        </select>
+
+        <p>Click on the map to select start and end points</p>
+
+        <div id="info">
+            <p>Start: <span id="start-point">Not selected</span></p>
+            <p>End: <span id="end-point">Not selected</span></p>
+            <p>Distance: <span id="distance">-</span> km</p>
+            <p>Estimated Time: <span id="time">-</span></p>
+            <p>Calculation Time: <span id="calc-time">-</span> ms</p> 
+        </div>
+        
+
+        <button id="clear-btn">Clear Route</button>
+    </div>
+
+    
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="a_star.js"></script>  
+    <script src="dijkstra.js"></script> 
+    <script src="script.js"></script>   
+
+</body>
+</html>

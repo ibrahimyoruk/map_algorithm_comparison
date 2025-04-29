@@ -1,0 +1,145 @@
+{
+    "nodes": ["Istanbul", "Ankara", "Izmir", "Antalya", "Bursa", "Adana", "Samsun", "Trabzon", "Diyarbakir", "Gaziantep", "Konya", "Mersin", "Kayseri", "Eskişehir", "Erzurum", "Malatya", "Van", "Sivas", "Balıkesir", "Denizli"],
+    "edges": {
+      "Istanbul": [
+          {"node": "Ankara", "weight": 450, "type": "road"},
+          {"node": "Izmir", "weight": 570, "type": "road"},
+          {"node": "Bursa", "weight": 150, "type": "road"},
+          {"node": "Antalya", "weight": 700, "type": "road"},
+          {"node": "Adana", "weight": 940, "type": "road"},
+          {"node": "Eskişehir", "weight": 300, "type": "road"}
+      ],
+      "Ankara": [
+          {"node": "Istanbul", "weight": 450, "type": "road"},
+          {"node": "Izmir", "weight": 590, "type": "road"},
+          {"node": "Antalya", "weight": 500, "type": "road"},
+          {"node": "Adana", "weight": 480, "type": "road"},
+          {"node": "Samsun", "weight": 400, "type": "road"},
+          {"node": "Diyarbakir", "weight": 900, "type": "road"},
+          {"node": "Konya", "weight": 260, "type": "road"},
+          {"node": "Kayseri", "weight": 320, "type": "road"}
+      ],
+      "Izmir": [
+          {"node": "Istanbul", "weight": 570, "type": "road"},
+          {"node": "Ankara", "weight": 590, "type": "road"},
+          {"node": "Antalya", "weight": 460, "type": "road"},
+          {"node": "Bursa", "weight": 400, "type": "road"},
+          {"node": "Denizli", "weight": 200, "type": "road"},
+          {"node": "Balıkesir", "weight": 170, "type": "road"}
+      ],
+      "Antalya": [
+          {"node": "Ankara", "weight": 500, "type": "road"},
+          {"node": "Izmir", "weight": 460, "type": "road"},
+          {"node": "Bursa", "weight": 547, "type": "road"},
+          {"node": "Adana", "weight": 550, "type": "road"},
+          {"node": "Konya", "weight": 300, "type": "road"},
+          {"node": "Denizli", "weight": 230, "type": "road"}
+      ],
+      "Bursa": [
+          {"node": "Istanbul", "weight": 150, "type": "road"},
+          {"node": "Izmir", "weight": 400, "type": "road"},
+          {"node": "Antalya", "weight": 547, "type": "road"},
+          {"node": "Balıkesir", "weight": 150, "type": "road"},
+          {"node": "Eskişehir", "weight": 160, "type": "road"}
+      ],
+      "Adana": [
+          {"node": "Ankara", "weight": 480, "type": "road"},
+          {"node": "Antalya", "weight": 550, "type": "road"},
+          {"node": "Diyarbakir", "weight": 350, "type": "road"},
+          {"node": "Gaziantep", "weight": 220, "type": "road"},
+          {"node": "Mersin", "weight": 70, "type": "road"}
+      ],
+      "Samsun": [
+          {"node": "Ankara", "weight": 400, "type": "road"},
+          {"node": "Trabzon", "weight": 330, "type": "road"},
+          {"node": "Erzurum", "weight": 600, "type": "road"}
+      ],
+      "Trabzon": [
+          {"node": "Samsun", "weight": 330, "type": "road"},
+          {"node": "Erzurum", "weight": 400, "type": "road"}
+      ],
+      "Diyarbakir": [
+          {"node": "Ankara", "weight": 900, "type": "road"},
+          {"node": "Adana", "weight": 350, "type": "road"},
+          {"node": "Malatya", "weight": 300, "type": "road"},
+          {"node": "Van", "weight": 450, "type": "road"}
+      ],
+      "Gaziantep": [
+          {"node": "Adana", "weight": 220, "type": "road"},
+          {"node": "Diyarbakir", "weight": 280, "type": "road"},
+          {"node": "Malatya", "weight": 190, "type": "road"}
+      ],
+      "Konya": [
+          {"node": "Ankara", "weight": 260, "type": "road"},
+          {"node": "Antalya", "weight": 300, "type": "road"},
+          {"node": "Mersin", "weight": 350, "type": "road"},
+          {"node": "Sivas", "weight": 400, "type": "road"}
+      ],
+      "Mersin": [
+          {"node": "Adana", "weight": 70, "type": "road"},
+          {"node": "Konya", "weight": 350, "type": "road"}
+      ],
+      "Kayseri": [
+          {"node": "Ankara", "weight": 320, "type": "road"},
+          {"node": "Sivas", "weight": 180, "type": "road"},
+          {"node": "Malatya", "weight": 290, "type": "road"}
+      ],
+      "Eskişehir": [
+          {"node": "Istanbul", "weight": 300, "type": "road"},
+          {"node": "Bursa", "weight": 160, "type": "road"},
+          {"node": "Ankara", "weight": 230, "type": "road"}
+      ],
+      "Erzurum": [
+          {"node": "Samsun", "weight": 600, "type": "road"},
+          {"node": "Trabzon", "weight": 400, "type": "road"},
+          {"node": "Van", "weight": 350, "type": "road"},
+          {"node": "Sivas", "weight": 500, "type": "road"}
+      ],
+      "Malatya": [
+          {"node": "Diyarbakir", "weight": 300, "type": "road"},
+          {"node": "Gaziantep", "weight": 190, "type": "road"},
+          {"node": "Kayseri", "weight": 290, "type": "road"},
+          {"node": "Sivas", "weight": 250, "type": "road"}
+      ],
+      "Van": [
+          {"node": "Diyarbakir", "weight": 450, "type": "road"},
+          {"node": "Erzurum", "weight": 350, "type": "road"}
+      ],
+      "Sivas": [
+          {"node": "Konya", "weight": 400, "type": "road"},
+          {"node": "Kayseri", "weight": 180, "type": "road"},
+          {"node": "Erzurum", "weight": 500, "type": "road"},
+          {"node": "Malatya", "weight": 250, "type": "road"}
+      ],
+      "Balıkesir": [
+          {"node": "Izmir", "weight": 170, "type": "road"},
+          {"node": "Bursa", "weight": 150, "type": "road"}
+      ],
+      "Denizli": [
+          {"node": "Izmir", "weight": 200, "type": "road"},
+          {"node": "Antalya", "weight": 230, "type": "road"}
+      ]
+    },
+    "coordinates": {
+      "Istanbul": [41.0082, 28.9784],
+      "Ankara": [39.9334, 32.8597],
+      "Izmir": [38.4237, 27.1428],
+      "Antalya": [36.8969, 30.7133],
+      "Bursa": [40.1885, 29.0610],
+      "Adana": [37.0000, 35.3213],
+      "Samsun": [41.2793, 36.3361],
+      "Trabzon": [41.0050, 39.7269],
+      "Diyarbakir": [37.9144, 40.2341],
+      "Gaziantep": [37.0662, 37.3833],
+      "Konya": [37.8667, 32.4833],
+      "Mersin": [36.8000, 34.6333],
+      "Kayseri": [38.7312, 35.4787],
+      "Eskişehir": [39.7767, 30.5206],
+      "Erzurum": [39.9000, 41.2700],
+      "Malatya": [38.3554, 38.3335],
+      "Van": [38.4941, 43.3800],
+      "Sivas": [39.7500, 37.0167],
+      "Balıkesir": [39.6484, 27.8826],
+      "Denizli": [37.7833, 29.1000]
+    }
+}
