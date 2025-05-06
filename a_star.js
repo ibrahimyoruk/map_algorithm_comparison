@@ -1,19 +1,21 @@
+// A* Algorithm with working heuristic using Leaflet distance
 function aStar(graph, start, goal) {
-    const openSet = new Set([start]);
+    const openSet = new PriorityQueue();
     const cameFrom = {};
     const gScore = {};
     const fScore = {};
 
-    for (const node of Object.keys(graph)) {
+    for (const node in graph) {
         gScore[node] = Infinity;
         fScore[node] = Infinity;
     }
 
     gScore[start] = 0;
     fScore[start] = heuristic(start, goal);
+    openSet.enqueue(start, fScore[start]);
 
-    while (openSet.size > 0) {
-        let current = [...openSet].reduce((a, b) => fScore[a] < fScore[b] ? a : b);
+    while (!openSet.isEmpty()) {
+        const current = openSet.dequeue();
 
         if (current === goal) {
             const path = reconstructPath(cameFrom, current);
@@ -21,16 +23,14 @@ function aStar(graph, start, goal) {
             return { path, distance };
         }
 
-        openSet.delete(current);
-
         for (const neighbor of graph[current]) {
             const tentativeGScore = gScore[current] + neighbor.weight;
 
             if (tentativeGScore < gScore[neighbor.node]) {
                 cameFrom[neighbor.node] = current;
                 gScore[neighbor.node] = tentativeGScore;
-                fScore[neighbor.node] = gScore[neighbor.node] + heuristic(neighbor.node, goal);
-                openSet.add(neighbor.node);
+                fScore[neighbor.node] = tentativeGScore + heuristic(neighbor.node, goal);
+                openSet.enqueue(neighbor.node, fScore[neighbor.node]);
             }
         }
     }
@@ -38,20 +38,25 @@ function aStar(graph, start, goal) {
     return { path: [], distance: Infinity };
 }
 
-function heuristic(a, b) {
-    if (coordinates[a] && coordinates[b]) {
-        const dx = coordinates[a][0] - coordinates[b][0];
-        const dy = coordinates[a][1] - coordinates[b][1];
-        return Math.sqrt(dx * dx + dy * dy);
+// Heuristic using geographic distance in km
+function heuristic(nodeA, nodeB) {
+    const a = coordinates[nodeA];
+    const b = coordinates[nodeB];
+    if (!a || !b) {
+        console.warn("Heuristic failed", nodeA, nodeB);
+        return 0; // fallback
     }
-    return Infinity;
+    const latlngA = L.latLng(a);
+    const latlngB = L.latLng(b);
+    return latlngA.distanceTo(latlngB) / 1000; // km
 }
 
+// Reconstructs path from goal back to start
 function reconstructPath(cameFrom, current) {
-    const totalPath = [current];
-    while (cameFrom[current]) {
+    const path = [current];
+    while (cameFrom[current] !== undefined) {
         current = cameFrom[current];
-        totalPath.unshift(current);
+        path.unshift(current);
     }
-    return totalPath;
+    return path;
 }

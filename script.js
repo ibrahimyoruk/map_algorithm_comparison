@@ -1,12 +1,34 @@
-// Map initialization
-const map = L.map('map').setView([39.0, 35.0], 6);
+// ✅ Ortak PriorityQueue (tek yerden tanımlanıyor)
+class PriorityQueue {
+    constructor() {
+        this.elements = [];
+    }
 
-// Add OpenStreetMap tiles
+    enqueue(element, priority) {
+        this.elements.push({ element, priority });
+    }
+
+    dequeue() {
+        let lowestIndex = 0;
+        for (let i = 1; i < this.elements.length; i++) {
+            if (this.elements[i].priority < this.elements[lowestIndex].priority) {
+                lowestIndex = i;
+            }
+        }
+        return this.elements.splice(lowestIndex, 1)[0].element;
+    }
+
+    isEmpty() {
+        return this.elements.length === 0;
+    }
+}
+
+// Harita başlat
+const map = L.map('map').setView([36.65, 29.12], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors'
 }).addTo(map);
 
-// Global variables
 let graph = {};
 let coordinates = {};
 let startMarker = null;
@@ -15,20 +37,49 @@ let routeLine = null;
 let startNode = null;
 let endNode = null;
 
-// Load graph data
-fetch('graph-data.json')
-    .then(response => response.json())
-    .then(data => {
-        graph = data.edges;
-        coordinates = data.coordinates;
-
-        
-        for (const node in coordinates) {
-            L.marker(coordinates[node], { interactive: false }).addTo(map);
-        }
+// OSM verisini yükle
+fetch('fethiye.json')
+    .then(res => res.json())
+    .then(osmData => {
+        const parsed = parseOSMData(osmData);
+        graph = parsed.edges;
+        coordinates = parsed.coordinates;
+        console.log("Veri yüklendi. Node sayısı:", Object.keys(graph).length);
     })
-    .catch(error => console.error('Error loading graph data:', error));
+    .catch(error => console.error("Yükleme hatası:", error));
 
+// Veriyi parse et
+function parseOSMData(osmData) {
+    const coordinates = {};
+    const edges = {};
+
+    osmData.elements.forEach(el => {
+        if (el.type === "node") {
+            coordinates[el.id] = [el.lat, el.lon];
+            edges[el.id] = [];
+        }
+    });
+
+    osmData.elements.forEach(el => {
+        if (el.type === "way" && el.nodes) {
+            for (let i = 0; i < el.nodes.length - 1; i++) {
+                const from = el.nodes[i];
+                const to = el.nodes[i + 1];
+
+                if (coordinates[from] && coordinates[to]) {
+                    const fromLatLng = L.latLng(coordinates[from]);
+                    const toLatLng = L.latLng(coordinates[to]);
+                    const distance = fromLatLng.distanceTo(toLatLng) / 1000;
+
+                    edges[from].push({ node: to, weight: distance });
+                    edges[to].push({ node: from, weight: distance });
+                }
+            }
+        }
+    });
+
+    return { coordinates, edges };
+}
 
 function findNearestNode(latLng) {
     let minDistance = Infinity;
@@ -47,34 +98,29 @@ function findNearestNode(latLng) {
     return nearestNode;
 }
 
-// Function to update the route
 function updateRoute() {
     if (!startNode || !endNode) return;
 
     const selectedAlgorithm = document.getElementById('algorithm').value;
-
-    const iterations = 1000; // 1000 itaration for speed test 
     const startTime = performance.now();
 
     let result;
-    for (let i = 0; i < iterations; i++) {
-        if (selectedAlgorithm === "astar") {
-            result = aStar(graph, startNode, endNode);
-        } else {
-            result = dijkstra(graph, startNode, endNode);
-        }
+    if (selectedAlgorithm === "astar") {
+        result = aStar(graph, startNode, endNode);
+    } else {
+        result = dijkstra(graph, startNode, endNode);
     }
 
     const endTime = performance.now();
-    const calcTime = (endTime - startTime) / iterations; // Ortalama süre (ms)
+    const calcTime = endTime - startTime;
 
-    if (!result || result.distance === Infinity) {
+    if (!result || result.distance === Infinity || !result.path || result.path.length === 0) {
         alert("No path found between the selected points!");
         return;
     }
 
     document.getElementById('distance').textContent = result.distance.toFixed(2) + " km";
-    document.getElementById('calc-time').textContent = calcTime.toFixed(4) + " ms"; 
+    document.getElementById('calc-time').textContent = calcTime.toFixed(4) + " ms";
     document.getElementById('time').textContent = estimateTime(result.distance);
 
     const pathCoordinates = result.path.map(node => coordinates[node]);
@@ -86,139 +132,81 @@ function updateRoute() {
     animateRoute(pathCoordinates);
 
     setTimeout(() => {
-        if (routeLine) {
-            map.fitBounds(routeLine.getBounds());
-        }
+        if (routeLine) map.fitBounds(routeLine.getBounds());
     }, pathCoordinates.length * 300);
 }
 
 function estimateTime(distance) {
-    const averageSpeed = 80; // avarega speed (km/h)
+    const averageSpeed = 80;
     const hours = distance / averageSpeed;
-
-    if (hours < 1) {
-        const minutes = hours * 60;
-        return `${minutes.toFixed(0)} min`;
-    } else {
-        return `${hours.toFixed(1)} hours`;
-    }
+    return hours < 1 ? `${(hours * 60).toFixed(0)} min` : `${hours.toFixed(1)} hours`;
 }
-
 
 function calculatePathDistance(path) {
-    let totalDistance = 0;
+    let total = 0;
     for (let i = 0; i < path.length - 1; i++) {
-        const node = path[i];
-        const nextNode = path[i + 1];
-        const edge = graph[node].find(edge => edge.node === nextNode);
-        if (edge) {
-            totalDistance += edge.weight;
-        }
+        const edge = graph[path[i]].find(e => e.node === path[i + 1]);
+        if (edge) total += edge.weight;
     }
-    return totalDistance;
+    return total;
 }
-
 
 function animateRoute(pathCoords) {
     let index = 0;
     let drawnCoords = [];
+    if (routeLine) map.removeLayer(routeLine);
 
-    if (routeLine) {
-        map.removeLayer(routeLine);
-    }
+    routeLine = L.polyline([], { color: '#3388ff', weight: 5, opacity: 0.8 }).addTo(map);
 
-    routeLine = L.polyline([], {
-        color: '#3388ff',
-        weight: 5,
-        opacity: 0.8
-    }).addTo(map);
-
-    function drawNextSegment() {
+    function drawNext() {
         if (index >= pathCoords.length) return;
-
-        drawnCoords.push(pathCoords[index]);
+        drawnCoords.push(pathCoords[index++]);
         routeLine.setLatLngs(drawnCoords);
-        index++;
-
-        setTimeout(drawNextSegment, 300); 
+        setTimeout(drawNext, 300);
     }
 
-    drawNextSegment();
+    drawNext();
 }
 
-
-
-
 map.on('mousedown', function (e) {
-    e.originalEvent.stopPropagation(); 
-
+    e.originalEvent.stopPropagation();
     const clickedNode = findNearestNode(e.latlng);
 
     if (!startNode) {
         startNode = clickedNode;
         document.getElementById('start-point').textContent = `Node ${startNode}`;
-
-        if (startMarker) {
-            map.removeLayer(startMarker);
-        }
-
+        if (startMarker) map.removeLayer(startMarker);
         startMarker = L.marker(coordinates[startNode], {
-            icon: L.divIcon({
-                className: 'start-marker',
-                html: '🟢',
-                iconSize: [20, 20]
-            })
+            icon: L.divIcon({ className: 'start-marker', html: '🟢', iconSize: [20, 20] })
         }).addTo(map);
     }
     else if (!endNode) {
         if (clickedNode === startNode) {
-            alert("End point cannot be the same as start point.");
+            alert("End point cannot be the same.");
             return;
         }
 
         endNode = clickedNode;
         document.getElementById('end-point').textContent = `Node ${endNode}`;
-
-        if (endMarker) {
-            map.removeLayer(endMarker);
-        }
-
+        if (endMarker) map.removeLayer(endMarker);
         endMarker = L.marker(coordinates[endNode], {
-            icon: L.divIcon({
-                className: 'end-marker',
-                html: '🔴',
-                iconSize: [20, 20]
-            })
+            icon: L.divIcon({ className: 'end-marker', html: '🔴', iconSize: [20, 20] })
         }).addTo(map);
 
         updateRoute();
     }
     else {
-        alert("Both points already selected. Please clear the route to select again.");
+        alert("Both points already selected. Please clear the route.");
     }
 });
 
-
-document.getElementById('clear-btn').addEventListener('click', function () {
-    startNode = null;
-    endNode = null;
-
-    document.getElementById('start-point').textContent = 'Not selected';
-    document.getElementById('end-point').textContent = 'Not selected';
-    document.getElementById('distance').textContent = '-';
-
-    if (startMarker) {
-        map.removeLayer(startMarker);
-        startMarker = null;
-    }
-
-    if (endMarker) {
-        map.removeLayer(endMarker);
-        endMarker = null;
-    }
-
-    if (routeLine) {
-        map.removeLayer(routeLine);
-        routeLine = null;
-    }
+document.getElementById('clear-btn').addEventListener('click', () => {
+    startNode = endNode = null;
+    ['start-point', 'end-point', 'distance', 'time', 'calc-time'].forEach(id => {
+        document.getElementById(id).textContent = id.includes('point') ? 'Not selected' : '-';
+    });
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+    if (routeLine) map.removeLayer(routeLine);
+    startMarker = endMarker = routeLine = null;
 });
